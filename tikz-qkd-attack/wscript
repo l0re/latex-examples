@@ -1,0 +1,11 @@
+# vim: set fileencoding=UTF-8 filetype=python :
+from wlib import *
+
+# add all images to generate here
+# put names without extension (.tex is assumed)
+figures = ['scheme-pandm', 'attack1', 'attack3']
+
+def build(bld):
+    for fig in figures:
+        bld_and_copy(bld, fig)
+        

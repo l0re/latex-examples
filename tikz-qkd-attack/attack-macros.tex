@@ -1,0 +1,414 @@
+
+%%% own style settings
+% nodes
+\tikzstyle{source}=[very thick,draw,circle]
+\tikzstyle{con}=[draw,fill,circle,minimum size=1mm,inner sep=0pt,outer
+  sep=0pt,anchor=base]
+\newcommand{\nt}{\Large\bf} % node text
+\newcommand{\ntm}{\LARGE} % node text math mode
+\newcommand{\pmt}{\Large} % protocol message text
+
+% signals
+\tikzstyle{quantum}=[very thick,double]
+\tikzstyle{classic}=[very thick]
+\tikzstyle{separator}=[dashed]
+%\tikzstyle{peername}=[draw,thick]
+\tikzstyle{peername}=[]
+
+\makeatletter
+
+%%% logos for symbols
+\def\preparelogo{
+    \pgftext[center]{\raisebox{-0.75ex}{\ntm $\mathbf{\rho}$}}
+}
+
+\def\measlogo{
+    % meas sym
+    \pgfpathmoveto{\pgfpoint{-0.3cm}{-0.2cm}}
+    \pgfpathcurveto{\pgfpoint{-0.3cm}{0.1cm}}{\pgfpoint{0.3cm}{0.1cm}}{\pgfpoint{0.3cm}{-0.2cm}}
+    \pgfpathmoveto{\pgfpoint{0cm}{-0.2cm}}
+    \pgfpathlineto{\pgfpoint{0.2cm}{0.2cm}}
+    \pgfpathmoveto{\pgfpoint{0.2cm}{0.2cm}}
+    \pgfpathlineto{\pgfpoint{0.25cm}{0.1cm}}
+    \pgfpathmoveto{\pgfpoint{0.2cm}{0.2cm}}
+    \pgfpathlineto{\pgfpoint{0.1cm}{0.15cm}}
+    % draw the paths
+    \pgfsetlinewidth{0.9pt}
+    \pgfusepath{stroke}
+}
+
+\def\siftlogo{
+    % meas sym
+    \pgfpathmoveto{\pgfpoint{-0.2cm}{-0.1cm}}
+    \pgfpathlineto{\pgfpoint{0.2cm}{-0.1cm}}
+    \pgfpathmoveto{\pgfpoint{-0.2cm}{0.1cm}}
+    \pgfpathlineto{\pgfpoint{0.2cm}{0.1cm}}
+    % draw the paths
+    \pgfsetlinewidth{1.2pt}
+    \pgfusepath{stroke}
+}
+
+%%% macros
+\def\initblock{  % Init stuff as rect
+  \savedanchor\northeast{%
+    \pgfpoint{1cm}{1cm}% width and height of symbol without connectors
+    %\pgfmathsetlength\pgf@x{\pgfshapeminwidth}%
+    %\pgfmathsetlength\pgf@y{\pgfshapeminheight}%
+    \pgf@x=0.5\pgf@x
+    \pgf@y=0.5\pgf@y
+  }
+  \savedanchor\southwest{%
+    \pgfpoint{1cm}{1cm}% width and height of symbol without connectors
+    %\pgfmathsetlength\pgf@x{\pgfshapeminwidth}%
+    %\pgfmathsetlength\pgf@y{\pgfshapeminheight}%
+    \pgf@x=-0.5\pgf@x
+    \pgf@y=-0.5\pgf@y
+  }
+  \anchor{center}{\pgfpointorigin}
+  \anchor{north}{\northeast \pgf@x=0pt}
+  \anchor{east}{\northeast \pgf@y=0pt}
+  \anchor{south}{\southwest \pgf@x=0pt}
+  \anchor{west}{\southwest \pgf@y=0pt}
+  \anchor{north east}{\northeast}
+  \anchor{north west}{\northeast \pgf@x=-\pgf@x}
+  \anchor{south west}{\southwest}
+  \anchor{south east}{\southwest \pgf@x=-\pgf@x}
+  \anchor{text}{
+    \pgfpointorigin
+    \advance\pgf@x by -.5\wd\pgfnodeparttextbox%
+    \advance\pgf@y by -.5\ht\pgfnodeparttextbox%
+    \advance\pgf@y by +.5\dp\pgfnodeparttextbox%
+  }
+}
+
+%%% own shapes
+\pgfdeclareshape{genericIxI}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \anchor{in}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=0pt}
+  \anchor{out}{\northeast \pgf@x=\pgf@x \advance\pgf@x by 0.5cm \pgf@y=0pt}
+  
+  % Draw the rectangle box, ports and symbol
+  \backgroundpath{
+    % Rectangle box
+    \pgfpathrectanglecorners{\southwest}{\northeast}
+    
+    % Draw some things
+    % connection in
+    \pgf@anchor@genericIxI@in
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+
+    % connection out
+    \pgf@anchor@genericIxI@out
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by -0.5cm
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    
+    % draw the paths
+    \pgfsetroundcap
+    \pgfsetlinewidth{1.2pt} % very thick
+    \pgfusepath{stroke}
+  }
+}
+
+\pgfdeclareshape{genericIIxI}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \anchor{ina}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=-0.5\pgf@y}
+  \anchor{inb}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=0.5\pgf@y}
+  \anchor{out}{\northeast \pgf@x=\pgf@x \advance\pgf@x by 0.5cm \pgf@y=0pt}
+  
+  % Draw the rectangle box, ports and symbol
+  \backgroundpath{
+    % Rectangle box
+    \pgfpathrectanglecorners{\southwest}{\northeast}
+    
+    % Draw some things
+    % connection ina
+    \pgf@anchor@genericIIxI@ina
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+  
+    % connection inb
+    \pgf@anchor@genericIIxI@inb
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+
+    % connection out
+    \pgf@anchor@genericIIxI@out
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by -0.5cm
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    
+    % draw the paths
+    \pgfsetroundcap
+    \pgfsetlinewidth{1.2pt} % very thick
+    \pgfusepath{stroke}
+  }
+}
+
+\pgfdeclareshape{genericIIxII}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \anchor{ina}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=-0.5\pgf@y}
+  \anchor{inb}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=0.5\pgf@y}
+  \anchor{outa}{\northeast \pgf@x=\pgf@x \advance\pgf@x by 0.5cm \pgf@y=0.5\pgf@y}
+  \anchor{outb}{\northeast \pgf@x=\pgf@x \advance\pgf@x by 0.5cm \pgf@y=-0.5\pgf@y}
+
+  % Draw the rectangle box, ports and symbol
+  \backgroundpath{
+    % Rectangle box
+    \pgfpathrectanglecorners{\southwest}{\northeast}
+    
+    % Draw some things
+    % connection ina
+    \pgf@anchor@measIIxII@ina
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+  
+    % connection inb
+    \pgf@anchor@measIIxII@inb
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+
+    % connection outa
+    \pgf@anchor@measIIxII@outa
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by -0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    
+    % connection outb
+    \pgf@anchor@measIIxII@outb
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by -0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+
+    % draw the paths
+    \pgfsetroundcap
+    \pgfsetlinewidth{1.2pt} % very thick
+    \pgfusepath{stroke}
+  }
+}
+
+\pgfdeclareshape{genericIIIxI}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \anchor{ina}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=-0.5\pgf@y}
+  \anchor{inb}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=0cm}
+  \anchor{inc}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=0.5\pgf@y}
+  \anchor{out}{\northeast \pgf@x=\pgf@x \advance\pgf@x by 0.5cm \pgf@y=0cm}
+  
+  % Draw the rectangle box, ports and symbol
+  \backgroundpath{
+    % Rectangle box
+    \pgfpathrectanglecorners{\southwest}{\northeast}
+    
+    % Draw some things
+    % connection ina
+    \pgf@anchor@genericIIIxI@ina
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+  
+    % connection inb
+    \pgf@anchor@genericIIIxI@inb
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+
+    % connection inb
+    \pgf@anchor@genericIIIxI@inc
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+
+    % connection out
+    \pgf@anchor@genericIIIxI@out
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by -0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    
+    % draw the paths
+    \pgfsetroundcap
+    \pgfsetlinewidth{1.2pt} % very thick
+    \pgfusepath{stroke}
+  }
+}
+
+\pgfdeclareshape{genericIIIxII}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \anchor{ina}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=-0.5\pgf@y}
+  \anchor{inb}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=0cm}
+  \anchor{inc}{\southwest \pgf@x=\pgf@x \advance\pgf@x by -0.5cm \pgf@y=0.5\pgf@y}
+  \anchor{outa}{\northeast \pgf@x=\pgf@x \advance\pgf@x by 0.5cm \pgf@y=0.5\pgf@y}
+  \anchor{outb}{\northeast \pgf@x=\pgf@x \advance\pgf@x by 0.5cm \pgf@y=-0.5\pgf@y}
+  
+  % Draw the rectangle box, ports and symbol
+  \backgroundpath{
+    % Rectangle box
+    \pgfpathrectanglecorners{\southwest}{\northeast}
+    
+    % Draw some things
+    % connection ina
+    \pgf@anchor@genericIIIxII@ina
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+  
+    % connection inb
+    \pgf@anchor@genericIIIxII@inb
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+
+    % connection inb
+    \pgf@anchor@genericIIIxII@inc
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by 0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+
+    % connection outa
+    \pgf@anchor@genericIIIxII@outa
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by -0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    
+    % connection outb
+    \pgf@anchor@genericIIIxII@outb
+    \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+    \advance\pgf@xa by -0.5cm 
+    \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+
+    % draw the paths
+    \pgfsetroundcap
+    \pgfsetlinewidth{1.2pt} % very thick
+    \pgfusepath{stroke}
+  }
+}
+
+\pgfdeclareshape{prepareIIxI}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \inheritanchor[from=genericIIxI]{ina}
+  \inheritanchor[from=genericIIxI]{inb}
+  \anchor{out}{\northeast \pgf@y=0pt}
+
+  % Draw the rectangle box, ports and symbol
+  \inheritbackgroundpath[from=genericIIxI]
+  \foregroundpath{\preparelogo}
+}
+
+\pgfdeclareshape{measIIxII}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \inheritanchor[from=genericIIxII]{ina}
+  \inheritanchor[from=genericIIxII]{inb}
+  \inheritanchor[from=genericIIxII]{outa}
+  \inheritanchor[from=genericIIxII]{outb}
+
+  % Draw the rectangle box, ports and symbol
+  \inheritbackgroundpath[from=genericIIxII]
+  \foregroundpath{\measlogo}
+
+}
+
+\pgfdeclareshape{measIIxI}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \inheritanchor[from=genericIIxI]{ina}
+  \inheritanchor[from=genericIIxI]{inb}
+  \inheritanchor[from=genericIIxI]{out}
+
+  % Draw the rectangle box, ports and symbol
+  \inheritbackgroundpath[from=genericIIxI]
+  \foregroundpath{\measlogo}
+  
+}
+
+\pgfdeclareshape{measIIIxI}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \inheritanchor[from=genericIIIxI]{ina}
+  \inheritanchor[from=genericIIIxI]{inb}
+  \inheritanchor[from=genericIIIxI]{inc}
+  \inheritanchor[from=genericIIIxI]{out}
+
+  % Draw the rectangle box, ports and symbol
+  \inheritbackgroundpath[from=genericIIIxI]
+  \foregroundpath{\measlogo}
+  
+}
+
+\pgfdeclareshape{siftIIxI}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \inheritanchor[from=genericIIxI]{ina}
+  \inheritanchor[from=genericIIxI]{inb}
+  \inheritanchor[from=genericIIxI]{out}
+
+  % Draw the rectangle box, ports and symbol
+  \inheritbackgroundpath[from=genericIIxI]
+  \foregroundpath{\siftlogo}
+}
+
+\pgfdeclareshape{siftIIxII}
+{
+  \initblock
+  
+  % Define anchors for signal ports
+  \inheritanchor[from=genericIIxII]{ina}
+  \inheritanchor[from=genericIIxII]{inb}
+  \inheritanchor[from=genericIIxII]{outa}
+  \inheritanchor[from=genericIIxII]{outb}
+
+  % Draw the rectangle box, ports and symbol
+  \inheritbackgroundpath[from=genericIIxII]
+  \foregroundpath{\siftlogo}
+}
+\makeatother
+
