@@ -1,0 +1,112 @@
+% vim: set fileencoding=UTF-8 filetype=tex :
+%-----------------------------------------------------------------------------
+%
+% Attack scenario 1
+%
+% Author: Thomas Loruenser (2013): initial version
+%
+%-----------------------------------------------------------------------------
+% Copyright 2013, Thomas Loruenser <thomas.loruenser@ait.ac.at>
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%-----------------------------------------------------------------------------
+\documentclass{standalone}
+
+%%% load tikz
+\usepackage{tikz}
+\usetikzlibrary{calc,arrows}
+
+%%% quantum macros
+\input{attack-macros} 
+\input{symbols}
+
+%%% draw picture
+\begin{document}
+\begin{tikzpicture}
+
+  % important constants
+  \def\acline{-1.5}
+  \def\ecline{-7}
+  \def\bcline{-12.5}
+
+  % grid
+  %\draw[help lines,opacity=0.1] (0,-14) grid (19,0);
+
+  % separation
+  \draw [separator] (0,\acline-1.75) -- ++(20.5,0);
+  \draw [separator] (0,\ecline+1.75) -- ++(20.5,0);
+  \draw [separator] (0,\ecline-1.75) -- ++(20.5,0);
+  \draw [separator] (0,\bcline+1.75) -- ++(20.5,0);
+  \node (na) [peername] at (20,\acline-1) {\Huge Alice};
+  \node (nb) [peername] at (20,\ecline) {\Huge Eve};
+  \node (nc) [peername] at (20,\bcline+1) {\Huge Bob};
+
+  % prepare bits
+  \path (0.5,\acline) 
+    +(0,1) node (da) [source] {\ntm $d^\Alice$} 
+    +(0,-1) node (ba) [source] {\ntm $b^\Alice$}
+    +(2,0) node (ga1) [prepareIIxI] {};
+  \draw [classic] (da) -- ++(1,0) node (dac) [con] {} |- (ga1.ina);
+  \draw [classic] (ba) -- ++(1,0) node (bac) [con] {} |- (ga1.inb);
+  
+  \path (0.5,\ecline) 
+    +(0,1) node (de) [source] {\ntm $d^\Eve$} 
+    +(0,-1) node (be) [source] {\ntm $b^\Eve$}
+    +(2,0) node (ge1) [prepareIIxI] {};
+  \draw [classic] (de) -- ++(1,0) node (dec) [con] {} |- (ge1.ina);
+  \draw [classic] (be) -- ++(1,0) node (bec) [con] {} |- (ge1.inb);
+  \node (ge2) [measIIxI] at (11,\ecline+0.25) {};
+  \node (ge2b) [genericIIxI] at (11,\ecline-1) {\nt A$_1$};
+
+  \node (bb) [source] at (0.5,\bcline-1) {\ntm $b^\Bob$}; 
+  \node (gb1) [measIIxII] at (5.5,\bcline) {};
+  \draw [classic] (bb) -- ++(4,0) node (bbc) [con] {} |- (gb1.inb);
+
+  % send qbit
+  \draw [quantum] (ga1.out) -- ++(0.5,0) -- ++(0.5,-5.0)  node [pos=0.55,right,text width=3cm] {\pmt (S1):\\ $\sA$}
+    -- ++(5,0) |- (ge2.inb) -- ++(0.5,0);
+    \draw [quantum] (ge1.out) -- ++(1.0,0) -- ++(0.5,-5.25) node [pos=0.54,right,text width=3cm] {\pmt (S1'):\\ $\sE$}
+    -- (gb1.ina) -- ++(0.5,0);
+
+  % send acknowledge
+  \node (gas) [genericIIxI] at (8.5,\acline-0.75) {ACK};
+  \draw [classic] (bac) -- ++(5,0) |- (gas.ina);
+  \draw [classic] (gb1.outa)-- (gas.inb) node [pos=0.25,right,text width=3cm] {\pmt (S2):\\ $\mack,t_1$};
+
+  % send bases
+  \node (gb2) [siftIIxI] at (13.5,\bcline+0.5) {};
+  \node (gb3) [genericIIxI] at (15.5,\bcline) {\nt \&};
+  \draw [classic] (gas.out) -- (ge2.ina) node [pos=0.45,right,text width=3cm] {\pmt (S3):\\ $\BA,t_2$} |- (ge2b.ina);
+  \draw [classic] (bec) -- ++(7.5,0) |- (ge2b.inb);
+  \draw [classic] (ge2b.out) -- (gb2.ina) node [pos=0.47,right,text width=3cm] {\pmt (S3'):\\ $\tildeBE,t_2$};
+  \draw [classic] (bbc) -| (gb2.inb);
+  \draw [classic] (gb1.outb) |- (gb3.inb);
+  \draw [classic] (gb2.out) |- (gb3.ina);
+
+  % acknowledge bases
+  \node (ge3) [genericIIIxII] at (16,\ecline+0.25) {\nt A$_2$};
+  \node (ga2) [genericIIxI] at (18.5,\acline+0.75) {\nt \&};
+  \draw [classic] (gb2.out) node [con] {} -- ++(0.5,4.75) node [pos=0.47,right,text width=3cm] {\pmt (S4):\\ $\BEB,t_3$} |- (ge3.inc);
+  \draw [classic] (ge2.out) |- (ge3.inb);
+  \draw [classic] (dec) -| (ge3.ina);
+  \draw [classic] (ge3.outa) -- (ga2.inb) node [pos=0.43,right,text width=3cm] {\pmt (S4'):\\ $\tildeBAE,t_3$};
+
+  % extract key
+  \draw [classic] (dac) |- (ga2.ina);
+  \draw [classic] (ga2.out) node (ga2) [right,outer sep=0.1cm] {\ntm $s^\Alice$};
+  \draw [classic] (ge3.outb) -- ++(0.5,0) node (ga2) [right,outer sep=0.3cm] {\ntm $s^\Eve$};
+  \draw [classic] (gb3.out) -- ++(0.5,0) node (ga2) [right,outer sep=0.3cm] {\ntm $s^\Bob$};
+
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,149 @@
+% vim: set fileencoding=UTF-8 filetype=tex :
+%-----------------------------------------------------------------------------
+%
+% Attack scenario 1
+%
+% Author: Thomas Loruenser (2013): initial version
+%
+%-----------------------------------------------------------------------------
+% Copyright 2013, Thomas Loruenser <thomas.loruenser@ait.ac.at>
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%-----------------------------------------------------------------------------
+\documentclass{standalone}
+
+%%% load tikz
+\usepackage{tikz}
+\usetikzlibrary{calc,arrows}
+
+%%% quantum macros
+\input{attack-macros} 
+\input{symbols}
+
+%%% draw picture
+\begin{document}
+\begin{tikzpicture}
+  % important constants
+  \def\acline{-1.5}
+  \def\ecline{-8}
+  \def\bcline{-14.5}
+
+  % grid
+  %\draw[help lines,opacity=0.1] (0,-15.5) grid (30,0);
+
+  % separation
+  \draw [separator] (0,\acline-2) -- ++(27.5,0);
+  \draw [separator] (0,\ecline+2) -- ++(28.5,0);
+  \draw [separator] (0,\ecline-2) -- ++(28.5,0);
+  \draw [separator] (0,\bcline+2) -- ++(29.5,0);
+  \node (na) [peername] at (27,\acline-1) {\Huge Alice};
+  \node (nb) [peername] at (28.5,\ecline-1) {\Huge Eve};
+  \node (nc) [peername] at (28.5,\bcline-1) {\Huge Bob};
+
+  % prepare bits
+  \path (0.5,\acline) 
+    +(0,1) node (da) [source] {\ntm $d^A$} 
+    +(0,-1) node (ba) [source] {\ntm $b^A$}
+    +(2,0) node (ga1) [prepareIIxI] {};
+  \draw [classic] (da) -- ++(1,0) node (dac) [con] {} |- (ga1.ina);
+  \draw [classic] (ba) -- ++(1,0) node (bac) [con] {} |- (ga1.inb);
+  
+  \node (ge2) [prepareIIxI] at (7,\ecline+0.25) {};
+  \path (0.5,\ecline) 
+    +(0,-0.75) node (be) [source] {\ntm $b^E$}
+    +(4.5,0.5) node (ge1) [measIIxI] {};
+  \draw [classic] (be) -- ++(3.5,0) node (bec) [con] {} |- (ge1.inb);
+  \draw [classic] (bec) -- ++(2,0) node (bec2) [con] {} -| (ge2.inb);
+
+  \node (bb) [source] at (0.5,\bcline-1) {\ntm $b^B$}; 
+  \node (gb1) [measIIxI] at (9.5,\bcline-0.25) {};
+  \draw [classic] (bb) -- ++(8,0) node (bbc) [con] {} |- (gb1.inb);
+
+  % send qbit
+  \draw [quantum] (ga1.out) -- ++(0.5,0) -- (ge1.ina) -- ++(0.5,0);
+  \draw [quantum] (ge2.out) -- ++(0.5,0) -- (gb1.ina) -- ++(0.5,0);
+
+  % send bases
+  \node (ge3) [siftIIxII] at (12,\ecline-1) {};
+  \node (ge4) [genericIIxI] at (14,\ecline) {\nt \&};
+  \node (ge5) [genericIIxI] at (16,\ecline+1) {\nt A};
+  \node (gb3) [genericIIxI] at (14.5,\bcline) {\nt \&};
+  \node (ga2) [siftIIxI] at (11.5,\acline-1.25) {};
+  \draw [classic] (bec2) -- ++(4,0) node (bec3) [con] {} |- (ge3.ina);
+  \draw [classic] (bbc) -- ++(2,0) -- (ge3.inb);
+  \draw [classic] (bec3) -- (ga2.inb);
+  \draw [classic] (ge2.ina) node [con] {} -- ++(0,0.75) -| (ge4.ina);
+  \draw [classic] (ge4.out) -- (ge5.inb);
+  \draw [classic] (bac) -- ++(8,0) |- (ga2.ina);
+
+  % acknowledge bases
+  \draw [classic] (ga2.out) node [con] {} -- ++(2,0) -- (ge5.ina);
+  \draw [classic] (ge3.outa) -- (ge4.inb);
+  \draw [classic] (ge3.outb) -- (gb3.ina);
+  \draw [classic] (gb1.out) -- (gb3.inb);
+
+  % extract key
+  \node (ga3) [genericIIxI] at (13.5,\acline+0.75) {\nt \&};
+  \draw [classic] (ga2.out) |- (ga3.inb);
+  \draw [classic] (dac) |- (ga3.ina);
+
+  % forward error correction
+  \def\fecx{16.5}
+  \node (ga4) [genericIxI] at (\fecx,\acline-0.25) {\nt EC};
+  \node (ge6) [genericIxI] at (\fecx+1,\ecline-1) {\nt EC};
+  \node (ge7) [genericIIxI] at (\fecx+2.5,\ecline+1) {\nt EC};
+  \node (gb4) [genericIIxI] at (\fecx+3.5,\bcline+0.25) {\nt EC};
+  \draw [classic] (ga4.in) -- ++(0,1) node (kac1) [con] {};
+  \draw [classic] (ga3.out) -- (kac1);
+  \draw [classic] (ga4.out) -- (ge7.ina);
+  \draw [classic] (ge7.inb) -| (ge5.out);
+  \draw [classic] (ge6.in) -| (ge4.out) node [con] {};
+  \draw [classic] (ge6.out) -- (gb4.ina);
+  \draw [classic] (gb4.inb) -| (gb3.out);
+
+  % confirmation
+  \def\cox{19.5}
+  \node (ga5) [genericIxI] at (\cox,\acline-0.25) {\nt CO};
+  \node (ge8) [genericIxI] at (\cox+1,\ecline-1) {\nt CO};
+  \node (ge9) [genericIIxI] at (\cox+2.5,\ecline+1) {\nt CK};
+  \node (gb5) [genericIIxI] at (\cox+3.5,\bcline+0.5) {\nt CK};
+  \draw [classic] (ga5.out) -- (ge9.ina);
+  \draw [classic] (ge7.out) |- (ge9.inb);
+  \draw [classic] (ga5.in) -- ++(0,1) node (kac2) [con] {};
+  \draw [classic] (kac1) -- (kac2);
+  \draw [classic] (ge8.in) -- ++(0,1) node (ke2c1) [con] {};
+  \draw [classic] (ge4.out) -- (ke2c1);
+  \draw [classic] (ge8.out) -- (gb5.ina);
+  \draw [classic] (gb4.out) -- (gb5.inb);
+
+  % privacy ampl
+  \def\pax{22.5}
+  \node (ga6) [genericIIxII] at (\pax,\acline+0.5) {\nt PA};
+  \node (ge10) [genericIIIxII] at (\pax+2.5,\ecline+0.25) {\nt PA};
+  \node (gb6) [genericIIxI] at (\pax+5,\bcline+0.75) {\nt PA};
+  \node (rng) [source,left,inner sep=1pt] at (ga6.inb) {\Large\bf R};
+  \draw [classic] (kac2) -- (ga6.ina);
+  \draw [classic] (ga6.outb) -- (ge10.ina);
+  \draw [classic] (ge9.out) |- (ge10.inb);
+  \draw [classic] (ke2c1) -- (ge10.inc);
+  \draw [classic] (ge10.outb) -- (gb6.ina);
+  \draw [classic] (gb5.out) -- (gb6.inb);
+
+  % final keys
+  \draw [classic] (ga6.outa) -- +(1,0) node [right,outer sep=0.3cm] {\ntm $K_A$};
+  \draw [classic] (ge10.outa) -- +(0.5,0) node [right,outer sep=0.3cm] {\ntm $K_E$};
+  \draw [classic] (gb6.out) node [right,outer sep=0.3cm] {\ntm $K_B$};
+  
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,91 @@
+% vim: set fileencoding=UTF-8 filetype=tex :
+%-----------------------------------------------------------------------------
+%
+% Prepare and mesure QKD scheme
+%
+% Author: Thomas Loruenser (2013): initial version
+%
+%-----------------------------------------------------------------------------
+% Copyright 2013, Thomas Loruenser <thomas.loruenser@ait.ac.at>
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%-----------------------------------------------------------------------------
+\documentclass{standalone}
+
+%%% load tikz
+\usepackage{tikz}
+\usetikzlibrary{calc,arrows}
+
+%%% quantum macros
+\input{attack-macros} 
+\input{symbols}
+
+%%% draw picture
+\begin{document}
+\begin{tikzpicture}
+
+  % important constants
+  \def\acline{-1.5}
+  \def\ecline{-12}
+  \def\bcline{-7}
+
+  % grid
+  %\draw[help lines,opacity=0.1] (0,-8.5) grid (17,0);
+
+  % separation
+  \draw [separator] (0,\acline-1.75) -- ++(15.5,0);
+  \draw [separator] (0,\bcline+1.75) -- ++(15.5,0);
+  \node (na) [peername] at (15,\acline-1) {\Huge Alice};
+  \node (nc) [peername] at (15,\bcline+1) {\Huge Bob};
+
+  % prepare bits
+  \path (0.5,\acline) 
+    +(0,1) node (da) [source] {\ntm $d^\Alice$} 
+    +(0,-1) node (ba) [source] {\ntm $b^\Alice$}
+    +(2,0) node (ga1) [prepareIIxI] {};
+  \draw [classic] (da) -- ++(1,0) node (dac) [con] {} |- (ga1.ina);
+  \draw [classic] (ba) -- ++(1,0) node (bac) [con] {} |- (ga1.inb);
+  
+  \node (bb) [source] at (0.5,\bcline-1) {\ntm $b^\Bob$}; 
+  \node (gb1) [measIIxII] at (5,\bcline) {};
+  \draw [classic] (gb1.inb) -- ++(0,-0.75) node (bbc) [con] {} |- (bb);
+
+  % send qbit
+  \draw [quantum] (ga1.out) -- ++(0.5,0) -- (gb1.ina) node [pos=0.52,right,text width=3cm] {\pmt (S1): \\ $\sA$} -- ++(0.5,0);
+
+  % send acknowledge
+  %\node (gas) [genericIIxI] at (7.5,\acline-0.75) {\nt ACK};
+  \node (gas) [genericIIxI] at (7.5,\acline-0.75) {ACK};
+  \node (gb2) [siftIIxI] at (10,\bcline+0.5) {};
+  \draw [classic] (gb1.outa) -- (gas.inb) node [pos=0.59,right,text width=3cm] {\pmt (S2): \\ $\mack,t_1$};
+  \draw [classic] (gas.out) -- (gb2.ina) node [pos=0.5,right,text width=3cm] {\pmt (S3): \\ $\BA,t_2$};
+  \draw [classic] (bac) -- ++(4,0) |- (gas.ina);
+
+  % send bases
+  \node (gb3) [genericIIxI] at (12,\bcline) {\nt \&};
+  \draw [classic] (bbc) -| (gb2.inb);
+  \draw [classic] (gb1.outb) |- (gb3.inb);
+  \draw [classic] (gb2.out) |- (gb3.ina);
+
+  % acknowledge bases
+  \node (ga2) [genericIIxI] at (12.5,\acline+0.75) {\nt \&};
+  \draw [classic] (gb2.out) node [con] {} -- (ga2.inb) node [pos=0.41,right,text width=3cm] {\pmt (S4): \\ $\BAB,t_3$};
+
+  % extract key
+  \draw [classic] (dac) |- (ga2.ina);
+  \draw [classic] (ga2.out) node (ga2) [anchor=west,outer sep=0.3cm] {\ntm $s^\Alice$};
+  \draw [classic] (gb3.out) node (ga2) [anchor=west,outer sep=0.3cm] {\ntm $s^\Bob$};
+
+\end{tikzpicture}
+\end{document}

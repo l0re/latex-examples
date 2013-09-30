@@ -21,4 +21,5 @@ def configure(conf):
 def build(bld):
     # compile tikz figures
     bld.recurse('tikz')
+    bld.recurse('tikz-qkd-attack')
     
